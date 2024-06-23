@@ -3,7 +3,7 @@ import { Card } from "./card.js";
 import { shuffle, numberOfDaysBetween, daysAfter } from "./utils.js";
 
 const GROUP_POPULATIONS = {
-    "Torts": 1,
+    "Torts": 128,
 }
 /*
 const GROUP_POPULATIONS = {
@@ -43,9 +43,9 @@ const idToCardMap = {};
 // For now, I'm going to start all of the cards on random days, but with the 
 // constraint that they must be as evenly distributed as possible.
 let cardIdsInRandomOrder = [...Object.keys(idToCardMap)];
-shuffle(cardIdsInRandomOrder);
+// shuffle(cardIdsInRandomOrder);
 
-const lastDayForNewCards = Date.parse("24 Jul 2024");
+const lastDayForNewCards = Date.parse("26 Jul 2024");
 const daysLeftForNewCards = numberOfDaysBetween(Date.now(), lastDayForNewCards);
 console.log(`There are ${daysLeftForNewCards} days left to learn new cards.`);
 const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysLeftForNewCards);
@@ -75,14 +75,16 @@ for (let i = 0; i < daysLeftForNewCards; i++) cardsToStudyByDay.push([]);
     for (let i = 0; i < card.days.length; i++) {
         // If the days is in the past, don't bother adding it to our study
         // schedule
-        if (card.days[i] < Date.now()) continue;
+        if (card.days[i] < Date.now() && numberOfDaysBetween(card.days[i], Date.now())) continue;
 
         const daysAfterToday = numberOfDaysBetween(Date.now(), card.days[i]);
-        console.log(`Pushing card ${card.id}`);
         cardsToStudyByDay[daysAfterToday].push(card);
+        if (daysAfterToday === 1) {
+            console.log(card.days);
+            console.log(Date.now());
+            console.log(daysAfterToday);
+        }
     }
-
-    console.log(`To start, we have these days: ${card.days}`);
 
     if (card.days.length > 0) {
         let mostFutureStudyDate = card.days[card.days.length - 1];
@@ -100,8 +102,6 @@ for (let i = 0; i < daysLeftForNewCards; i++) cardsToStudyByDay.push([]);
         do {
 
             const endDateForNextWindow = daysAfter(startDateForNextWindow, period);
-            console.log(`I'm placing a cursor out at ${endDateForNextWindow}`);
-            console.log(`This compares to my start date of ${startDateForNextWindow}`);
 
             // Count planned cards for all days in the next window
             let latestDateWithFewestCards = endDateForNextWindow;
