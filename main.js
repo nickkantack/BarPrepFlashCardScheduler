@@ -3,10 +3,6 @@ import { Card } from "./card.js";
 import { shuffle, numberOfDaysBetween, daysAfter } from "./utils.js";
 
 const GROUP_POPULATIONS = {
-    "Torts": 128,
-}
-/*
-const GROUP_POPULATIONS = {
     "Torts": 44,
     "Evidence": 42,
     "Constracts": 42,
@@ -15,7 +11,6 @@ const GROUP_POPULATIONS = {
     "CriminalLawAndProcedure": 70,
     "Property": 65
 }
-*/
 
 // Calculate the total number of cards across all groups
 let TOTAL_NUMBER_OF_CARDS = 0;
@@ -43,97 +38,72 @@ const idToCardMap = {};
 // For now, I'm going to start all of the cards on random days, but with the 
 // constraint that they must be as evenly distributed as possible.
 let cardIdsInRandomOrder = [...Object.keys(idToCardMap)];
-// shuffle(cardIdsInRandomOrder);
+shuffle(cardIdsInRandomOrder);
 
+const studyPlanStartDay = Date.parse("23 Jun 2024");
 const lastDayForNewCards = Date.parse("26 Jul 2024");
-const daysLeftForNewCards = numberOfDaysBetween(Date.now(), lastDayForNewCards);
-console.log(`There are ${daysLeftForNewCards} days left to learn new cards.`);
-const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysLeftForNewCards);
-for (let i = 0; i < cardIdsInRandomOrder.length; i++) {
-    const currentDay = Math.floor(i / newCardsPerDay);
-    const studyDay = daysAfter(Date.now(), currentDay);
-    idToCardMap[cardIdsInRandomOrder[i]].days.push(studyDay);
+const daysInStudyPlan = numberOfDaysBetween(studyPlanStartDay, lastDayForNewCards);
+const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysInStudyPlan);
+console.log(`There are ${daysInStudyPlan} days to learn new cards.`);
+
+let cardsToStudyByDay = [];
+for (let i = 0; i < daysInStudyPlan; i++) cardsToStudyByDay.push([]);
+
+// Create a "new card" bucket for each day. These are equally filled and their
+// contents do not change. Each bucket will have a sampling counter that grows
+// each day but at a diminishing rate in time.
+let newCardBuckets = [];
+let newCardBucketSampleCounters = [];
+// TODO Don't randomly create the new card buckets. Manually make them based on
+// user input. Also, allow future new card buckets to be empty. This means this
+// tool only prescribes how to study old cards but does not dictate which new
+// cards to add to the study rotation (user gets to do that later).
+for (let i = 0; i < daysInStudyPlan; i++) newCardBuckets.push([]);
+for (let i = 0; i < TOTAL_NUMBER_OF_CARDS; i++) {
+    const bucketIndex = Math.floor(i / newCardsPerDay);
+    newCardBuckets[bucketIndex].push(idToCardMap[cardIdsInRandomOrder[i]]);
+    newCardBucketSampleCounters.push(0);
 }
 
-// Now forceast each card's review on the basis that none get recycled.
-// This amounts to iterating through all of the cards, identifying sampling
-// windows, and choosing the day in the sampling window with the smallest
-// number of cards. We will simultaneously start populating a temporary
-// list of cards studied in each day since this will allow us to quickly 
-// find days with the fewest planned cards to study.
-let cardsToStudyByDay = [];
-// TODO initialize differently; right now all days arrays point to the same object
-for (let i = 0; i < daysLeftForNewCards; i++) cardsToStudyByDay.push([]);
+// Fill the study buckets which are the inner lists of cardsToStudyByDay
+for (let i = 0; i < daysInStudyPlan; i++) {
 
-// MAIN SCHEDULING ALGORITHM
-// This method ingests the days arrays of all cards and computes a fresh
-// study plan from today's date until the final date of introducing new
-// cards.
-[...Object.values(idToCardMap)].forEach(card => {
+    // Give it all of the cards from the corresponding new card bucket and the
+    // previous new card bucket, if one exists
+    newCardBuckets[i].forEach(card => {
+        cardsToStudyByDay[i].push(card);
+    });
 
-    // First, add already planned study days to the schedule
-    for (let i = 0; i < card.days.length; i++) {
-        // If the days is in the past, don't bother adding it to our study
-        // schedule
-        if (card.days[i] < Date.now() && numberOfDaysBetween(card.days[i], Date.now())) continue;
-
-        const daysAfterToday = numberOfDaysBetween(Date.now(), card.days[i]);
-        cardsToStudyByDay[daysAfterToday].push(card);
-        if (daysAfterToday === 1) {
-            console.log(card.days);
-            console.log(Date.now());
-            console.log(daysAfterToday);
-        }
-    }
-
-    if (card.days.length > 0) {
-        let mostFutureStudyDate = card.days[card.days.length - 1];
-        let density = 1;
-
-        if (card.days.length > 1) {
-            // The separation between the last two dates implies the next density
-            let nextMostFutureStudyDate = card.days[card.days.length - 2];
-            density = 0.5 / numberOfDaysBetween(mostFutureStudyDate, nextMostFutureStudyDate);
-        }
-
-        let startDateForNextWindow = daysAfter(mostFutureStudyDate, 1);
-        let period = Math.floor(1 / density);
-
-        do {
-
-            const endDateForNextWindow = daysAfter(startDateForNextWindow, period);
-
-            // Count planned cards for all days in the next window
-            let latestDateWithFewestCards = endDateForNextWindow;
-            let minimumIndex = numberOfDaysBetween(Math.min(endDateForNextWindow, lastDayForNewCards), Date.now()) - 1;
-            let minimumCardsPerDayFound = cardsToStudyByDay[minimumIndex].length;
-            let dateCursor = Math.min(endDateForNextWindow, lastDayForNewCards);
-            while (numberOfDaysBetween(dateCursor, startDateForNextWindow) > 0) {
-                const index = numberOfDaysBetween(dateCursor, Date.now()) - 1;
-                if (cardsToStudyByDay[index].length < minimumCardsPerDayFound) {
-                    minimumIndex = index;
-                    minimumCardsPerDayFound = cardsToStudyByDay[index].length;
-                    latestDateWithFewestCards = dateCursor;
+    // Sample cards from previous new card buckets
+    for (let stepsBack = 1; stepsBack <= i; stepsBack++) {
+        const sampleCounterIncrement = newCardsPerDay * Math.pow(.6, stepsBack - 1);
+        const oldBucketIndex = i - stepsBack;
+        if (oldBucketIndex >= newCardBuckets.length) continue;
+        newCardBucketSampleCounters[oldBucketIndex] += sampleCounterIncrement;
+        const cardsToSample = Math.floor(newCardBucketSampleCounters[oldBucketIndex]);
+        newCardBucketSampleCounters[oldBucketIndex] -= cardsToSample;
+        for (let k = 0; k < cardsToSample; k++) {
+            // Find the card in the old card bucket that is tied for being the
+            // least practiced and add it to the bucket
+            let fewestTimesPracticed = null;
+            let leastPracticedCard = null;
+            newCardBuckets[oldBucketIndex].forEach(card => {
+                const timesThisCardWasPracticed = card.days.length;
+                if (fewestTimesPracticed == null || (timesThisCardWasPracticed < fewestTimesPracticed)) {
+                    leastPracticedCard = card;
+                    fewestTimesPracticed = timesThisCardWasPracticed;
                 }
-                dateCursor = daysAfter(dateCursor, -1);
+            });
+
+            // The old card bucket is allowed to be empty for some days and this
+            // manifests here as a null leastPracticedCard. Just don't sample the
+            // bucket in this case.
+            if (leastPracticedCard) {
+                leastPracticedCard.days.push(daysAfter(studyPlanStartDay, i));
+                cardsToStudyByDay[i].push(leastPracticedCard);
             }
-
-            // Add this card to a day that is least filled or tied for least filled
-            cardsToStudyByDay[minimumIndex].push(card);
-
-            // Record the date of study for the card in its days array
-            card.days.push(latestDateWithFewestCards);
-
-            // Move startDateForNextWindow in preparation for the next iteration
-            startDateForNextWindow = daysAfter(startDateForNextWindow, period);
-
-            // Update the density (period is updated at top of loop)
-            density /= 2;
-            period = Math.floor(1 / density);
-
-        } while (startDateForNextWindow < lastDayForNewCards);
+        }
     }
-
-});
+}
 
 console.log(cardsToStudyByDay);
