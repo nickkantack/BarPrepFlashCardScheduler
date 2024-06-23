@@ -58,14 +58,29 @@ let newCardBucketSampleCounters = [];
 // user input. Also, allow future new card buckets to be empty. This means this
 // tool only prescribes how to study old cards but does not dictate which new
 // cards to add to the study rotation (user gets to do that later).
-for (let i = 0; i < daysInStudyPlan; i++) newCardBuckets.push([]);
+for (let i = 0; i < daysInStudyPlan; i++) {
+    newCardBuckets.push([]);
+    newCardBucketSampleCounters.push(0);
+}
+
+// ----------------------------------------------------------------------------
+// Manually configure new card buckets here
+// ----------------------------------------------------------------------------
+newCardBuckets[0] = [...Object.values(idToCardMap)].filter(x => x.group === "Torts").slice(0, 12);
+
+console.log(newCardBuckets);
+    
+/*
 for (let i = 0; i < TOTAL_NUMBER_OF_CARDS; i++) {
     const bucketIndex = Math.floor(i / newCardsPerDay);
     newCardBuckets[bucketIndex].push(idToCardMap[cardIdsInRandomOrder[i]]);
     newCardBucketSampleCounters.push(0);
 }
+*/
 
-// Fill the study buckets which are the inner lists of cardsToStudyByDay
+// ----------------------------------------------------------------------------
+// Generate study plan
+// ----------------------------------------------------------------------------
 for (let i = 0; i < daysInStudyPlan; i++) {
 
     // Give it all of the cards from the corresponding new card bucket and the
@@ -78,7 +93,6 @@ for (let i = 0; i < daysInStudyPlan; i++) {
     for (let stepsBack = 1; stepsBack <= i; stepsBack++) {
         const sampleCounterIncrement = newCardsPerDay * Math.pow(.6, stepsBack - 1);
         const oldBucketIndex = i - stepsBack;
-        if (oldBucketIndex >= newCardBuckets.length) continue;
         newCardBucketSampleCounters[oldBucketIndex] += sampleCounterIncrement;
         const cardsToSample = Math.floor(newCardBucketSampleCounters[oldBucketIndex]);
         newCardBucketSampleCounters[oldBucketIndex] -= cardsToSample;
