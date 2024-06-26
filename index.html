@@ -5,6 +5,11 @@
     </head>
     <body>
         <div class="mainPanel">
+            <div id="dateControls">
+                <button id="dateBackButton" class="dateButton">A</button>
+                <div id="dayHeader"></div>
+                <button id="dateForwardButton" class="dateButton">B</button>
+            </div>
             <div class="dayPanel">
                 <div class="oldCardsForDayDiv">
                     <table class="oldCardTable"></table>
@@ -32,6 +37,7 @@
         <script type="module" src="./utils.js"></script>
         <script type="module" src="./card.js"></script>
         <script type="module" src="./algorithm.js"></script>
+        <script type="module" src="./dayControls.js"></script>
         <script type="module" src="./main.js"></script>
     </body>
 </html>

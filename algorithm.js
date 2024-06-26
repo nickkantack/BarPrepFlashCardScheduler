@@ -2,6 +2,16 @@
 import { Card } from "./card.js";
 import { shuffle, numberOfDaysBetween, daysAfter } from "./utils.js";
 
+const TORTS = "Torts";
+const EVIDENCE = "Evidence";
+const CONTRACTS = "Contracts";
+const CONSTITUTIONAL_LAW = "ConstitutionalLaw";
+const CIVIL_PROCEDURE = "CivilProcedure";
+const CRIMINAL_LAW_AND_PROCEDURE = "CriminalLawAndProcedure";
+const PROPERTY = "Property";
+const PERSONAL_JURISDICTION = "PersonalJurisdiction";
+const SUBJECT_MATTER_JURISDICTION = "SubjectMatterJurisdiction";
+
 const GROUP_POPULATIONS = {
     "Torts": 44,
     "Evidence": 42,
@@ -9,7 +19,9 @@ const GROUP_POPULATIONS = {
     "ConstitutionalLaw": 52,
     "CivilProcedure": 64,
     "CriminalLawAndProcedure": 70,
-    "Property": 65
+    "Property": 65,
+    "PersonalJurisdiction": 1,
+    "SubjectMatterJurisdiction": 1,
 }
 
 // Calculate the total number of cards across all groups
@@ -40,14 +52,89 @@ const idToCardMap = {};
 let cardIdsInRandomOrder = [...Object.keys(idToCardMap)];
 shuffle(cardIdsInRandomOrder);
 
-const studyPlanStartDay = Date.parse("23 Jun 2024");
-const lastDayForNewCards = Date.parse("26 Jul 2024");
+const studyPlanStartDay = Date.parse("22 Jun 2024");
+const lastDayForNewCards = Date.parse("25 Jul 2024");
 const daysInStudyPlan = numberOfDaysBetween(studyPlanStartDay, lastDayForNewCards);
 const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysInStudyPlan);
 console.log(`There are ${daysInStudyPlan} days to learn new cards.`);
 
 let cardsToStudyByDay = [];
-let newCardBuckets = [];
+// For now, we can hard code new card buckets to align with studying done
+// before this tool existed
+let newCardBuckets = [
+    // Virtual 22 Jun 2024
+    [
+        idToCardMap[`${CONTRACTS}_${3}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${3}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${1}`],
+        idToCardMap[`${CONTRACTS}_${1}`],
+        idToCardMap[`${CONTRACTS}_${2}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${5}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${2}`],
+        idToCardMap[`${EVIDENCE}_${14}`],
+        idToCardMap[`${CIVIL_PROCEDURE}_${20}`],
+        idToCardMap[`${PROPERTY}_${1}`],
+        idToCardMap[`${EVIDENCE}_${5}`],
+    ],
+    // Virtual 23 Jun 2024
+    [
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${4}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${1}`],
+        idToCardMap[`${EVIDENCE}_${3}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${4}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${2}`],
+        idToCardMap[`${EVIDENCE}_${1}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${6}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${44}`],
+        idToCardMap[`${CIVIL_PROCEDURE}_${22}`],
+        idToCardMap[`${EVIDENCE}_${2}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${42}`],
+    ],
+    // Virtual 24 Jun 2024
+    [
+        idToCardMap[`${CIVIL_PROCEDURE}_${21}`],
+        idToCardMap[`${CIVIL_PROCEDURE}_${18}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${41}`],
+        idToCardMap[`${PERSONAL_JURISDICTION}_${1}`],
+        idToCardMap[`${EVIDENCE}_${10}`],
+        idToCardMap[`${EVIDENCE}_${12}`],
+        idToCardMap[`${EVIDENCE}_${6}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${47}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${48}`],
+        idToCardMap[`${EVIDENCE}_${13}`],
+        idToCardMap[`${PROPERTY}_${7}`],
+        idToCardMap[`${EVIDENCE}_${9}`],
+    ],
+    // Virtual 25 Jun 2024
+    [
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${45}`],
+        idToCardMap[`${PROPERTY}_${8}`],
+        idToCardMap[`${PROPERTY}_${6}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${43}`],
+        idToCardMap[`${PROPERTY}_${5}`],
+        idToCardMap[`${CIVIL_PROCEDURE}_${19}`],
+        idToCardMap[`${EVIDENCE}_${8}`],
+        idToCardMap[`${SUBJECT_MATTER_JURISDICTION}_${1}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${46}`],
+        idToCardMap[`${CRIMINAL_LAW_AND_PROCEDURE}_${3}`],
+        idToCardMap[`${PROPERTY}_${9}`],
+        idToCardMap[`${EVIDENCE}_${4}`],
+    ],
+    // 26 Jun 2024
+    [
+        idToCardMap[`${TORTS}_${1}`],
+        idToCardMap[`${TORTS}_${2}`],
+        idToCardMap[`${TORTS}_${3}`],
+        idToCardMap[`${TORTS}_${4}`],
+        idToCardMap[`${TORTS}_${5}`],
+        idToCardMap[`${TORTS}_${6}`],
+        idToCardMap[`${CONTRACTS}_${4}`],
+        idToCardMap[`${CONTRACTS}_${5}`],
+        idToCardMap[`${CONTRACTS}_${6}`],
+        idToCardMap[`${CONTRACTS}_${7}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${7}`],
+    ]
+];
 let newCardBucketSampleCounters = [];
 
 generateStudyPlan();
@@ -56,7 +143,7 @@ function generateStudyPlan() {
 
     cardsToStudyByDay = [];
 
-    for (let i = 0; i < daysInStudyPlan; i++) cardsToStudyByDay.push([]);
+    for (let i = cardsToStudyByDay.length; i < daysInStudyPlan; i++) cardsToStudyByDay.push([]);
 
     // TODO Don't randomly create the new card buckets. Manually make them based on
     // user input. Also, allow future new card buckets to be empty. This means this
@@ -71,7 +158,7 @@ function generateStudyPlan() {
     // Manually configure new card buckets here
     // ----------------------------------------------------------------------------
     // TODO parse the HTML and fill the new card buckets
-    newCardBuckets[0] = [...Object.values(idToCardMap)].filter(x => x.group === "Torts").slice(0, 12);
+    // newCardBuckets[0] = [...Object.values(idToCardMap)].filter(x => x.group === "Torts").slice(0, 12);
 
     console.log(newCardBuckets);
         
@@ -130,4 +217,4 @@ function generateStudyPlan() {
     // TODO update the HTML old card tables
 }
 
-export { GROUP_POPULATIONS }
+export { GROUP_POPULATIONS, studyPlanStartDay, lastDayForNewCards }
