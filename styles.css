@@ -2,6 +2,12 @@
     width: 2em;
     height: 2em;
 }
+.deleteCardButton {
+    width: 2em;
+}
+.deleteCardButtonIsHot {
+    background: #F00;
+}
 .mainPanel {
     position: relative;
     margin-left: auto;

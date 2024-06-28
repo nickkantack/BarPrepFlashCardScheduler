@@ -1,4 +1,5 @@
 import { GROUP_POPULATIONS } from "./algorithm.js";
+import { addReclickListener } from "./reclickListener.js";
 
 const addNewCardButton = document.getElementById(`addNewCardButton`);
 const cardDivTemplate = document.getElementById(`cardTemplate`);
@@ -34,6 +35,17 @@ function generateNewCardDiv() {
     // groupSelect.dispatchEvent(starterEvent);
     groupSelect.selectedIndex = -1;
     indexSelect.selectedIndex = -1;
+
+    // Configure the reclick listener for the delete button
+    const deleteButton = cardDiv.querySelector(`button.deleteCardButton`); 
+    addReclickListener(deleteButton, () => {
+        deleteButton.classList.add(`deleteCardButtonIsHot`);
+    }, () => {
+        cardDiv.remove();
+    }, 1000, () => {
+        deleteButton.classList.remove(`deleteCardButtonIsHot`);
+    });
+
     return cardDiv;
 }
 
