@@ -16,15 +16,7 @@ function shuffle(array) {
   }
 }
 
-function numberOfDaysBetween(date1, date2, isVerbose) {
-    if (isVerbose) {
-      console.log(`date1 is ${new Date(date1).setHours(0, 0, 0, 0)}`);
-      console.log(`date2 is ${date2}`);
-      console.log(`date2 is ${new Date(date2).setHours(0, 0, 0, 0)}`);
-      console.log(`their difference is ${Math.abs(date1 - date2)}`);
-      console.log(`This is ${Math.abs(date1 - date2) / (1000 * 60 * 60 * 24)} days`);
-      console.log(`Round to ${Math.round(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24))}`);
-    }
+function numberOfDaysBetween(date1, date2) {
     return Math.round(Math.abs(new Date(date1).setHours(0, 0, 0, 0) - new Date(date2).setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24));
 }
 

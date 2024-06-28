@@ -74,8 +74,7 @@ function switchDay(previousDate) {
 function renderCardsForTheDay() {
 
     // Regenerate the day div to show the correct cards
-    const dayIndex = numberOfDaysBetween(currentShowingDate, studyPlanStartDay, true);
-    console.log(`The day index for today is ${dayIndex} and the date is ${currentShowingDate.toLocaleDateString()} and the study plan start day is ${new Date(studyPlanStartDay).toLocaleDateString()}`);
+    const dayIndex = numberOfDaysBetween(currentShowingDate, studyPlanStartDay);
 
     // Update all of the old cards for this day
     const oldCardsForDavDiv = document.querySelector(`div.oldCardsForDayDiv`);

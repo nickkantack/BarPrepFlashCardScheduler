@@ -15,7 +15,6 @@ class Card {
     }
 
     static fromJsonObject(jsonObject) {
-        console.log(jsonObject);
         return new Card(jsonObject.group, jsonObject.index);
     }
 

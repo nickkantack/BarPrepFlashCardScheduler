@@ -35,7 +35,6 @@ const idToCardMap = {};
 [...Object.keys(GROUP_POPULATIONS)].forEach(group => {
     const cardCount = GROUP_POPULATIONS[group];
     for (let i = 1; i <= cardCount; i++) {
-        console.log(`The group is ${group}`);
         const card = new Card(group, i);
         idToCardMap[card.id] = card;
     }
@@ -53,7 +52,6 @@ const lastDayForNewCards = Date.parse("25 Jul 2024");
 const daysInStudyPlan = numberOfDaysBetween(studyPlanStartDay, dayOfBar);
 const daysForNewCards = numberOfDaysBetween(studyPlanStartDay, lastDayForNewCards);
 const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysForNewCards);
-console.log(`There are ${daysForNewCards} days to learn new cards.`);
 
 let cardsToStudyByDay = [];
 // For now, we can hard code new card buckets to align with studying done
