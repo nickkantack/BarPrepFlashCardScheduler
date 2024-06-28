@@ -52,11 +52,13 @@ const idToCardMap = {};
 let cardIdsInRandomOrder = [...Object.keys(idToCardMap)];
 shuffle(cardIdsInRandomOrder);
 
+const dayOfBar = Date.parse("30 Jul 2024");
 const studyPlanStartDay = Date.parse("22 Jun 2024");
 const lastDayForNewCards = Date.parse("25 Jul 2024");
-const daysInStudyPlan = numberOfDaysBetween(studyPlanStartDay, lastDayForNewCards);
-const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysInStudyPlan);
-console.log(`There are ${daysInStudyPlan} days to learn new cards.`);
+const daysInStudyPlan = numberOfDaysBetween(studyPlanStartDay, dayOfBar);
+const daysForNewCards = numberOfDaysBetween(studyPlanStartDay, lastDayForNewCards);
+const newCardsPerDay = Math.ceil(TOTAL_NUMBER_OF_CARDS / daysForNewCards);
+console.log(`There are ${daysForNewCards} days to learn new cards.`);
 
 let cardsToStudyByDay = [];
 // For now, we can hard code new card buckets to align with studying done
@@ -135,7 +137,20 @@ let newCardBuckets = [
         idToCardMap[`${CONSTITUTIONAL_LAW}_${7}`],
     ]
 ];
+while (newCardBuckets.length < daysInStudyPlan) {
+    newCardBuckets.push([]);
+}
 let newCardBucketSampleCounters = [];
+
+// If there are saved new buckets, then load those
+const NEW_BUCKETS_STORAGE_KEY = `NEW_BUCKETS_STORAGE_KEY`;
+
+// Manually remove storage (only for debug)
+window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
+
+if (window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY)) {
+    newCardBuckets = window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY);
+}
 
 generateStudyPlan();
 
@@ -143,36 +158,19 @@ function generateStudyPlan() {
 
     cardsToStudyByDay = [];
 
-    for (let i = cardsToStudyByDay.length; i < daysInStudyPlan; i++) cardsToStudyByDay.push([]);
+    for (let i = 0; i < daysInStudyPlan; i++) cardsToStudyByDay.push([]);
 
     // TODO Don't randomly create the new card buckets. Manually make them based on
     // user input. Also, allow future new card buckets to be empty. This means this
     // tool only prescribes how to study old cards but does not dictate which new
     // cards to add to the study rotation (user gets to do that later).
     for (let i = 0; i < daysInStudyPlan; i++) {
-        newCardBuckets.push([]);
+        // Only initialize newCardBuckets if it is not yet initialized
+        // (i.e. be careful not to overwrite what was read from localStorage)
+        if (newCardBuckets.length === 0) newCardBuckets.push([]);
         newCardBucketSampleCounters.push(0);
     }
 
-    // ----------------------------------------------------------------------------
-    // Manually configure new card buckets here
-    // ----------------------------------------------------------------------------
-    // TODO parse the HTML and fill the new card buckets
-    // newCardBuckets[0] = [...Object.values(idToCardMap)].filter(x => x.group === "Torts").slice(0, 12);
-
-    console.log(newCardBuckets);
-        
-    /*
-    for (let i = 0; i < TOTAL_NUMBER_OF_CARDS; i++) {
-        const bucketIndex = Math.floor(i / newCardsPerDay);
-        newCardBuckets[bucketIndex].push(idToCardMap[cardIdsInRandomOrder[i]]);
-        newCardBucketSampleCounters.push(0);
-    }
-    */
-
-    // ----------------------------------------------------------------------------
-    // Generate study plan
-    // ----------------------------------------------------------------------------
     for (let i = 0; i < daysInStudyPlan; i++) {
 
         // Give it all of the cards from the corresponding new card bucket and the
@@ -212,9 +210,18 @@ function generateStudyPlan() {
         }
     }
 
-    console.log(cardsToStudyByDay);
-
-    // TODO update the HTML old card tables
+    /*
+    console.log([...cardsToStudyByDay[5]].sort((a, b) => {
+        if (a.id > b.id) {
+            return 1;
+        } else if (b.id > a.id) {
+            return -1;
+        }
+        return 0;
+    }));
+    */
 }
 
-export { GROUP_POPULATIONS, studyPlanStartDay, lastDayForNewCards }
+export { GROUP_POPULATIONS, studyPlanStartDay, lastDayForNewCards, dayOfBar,
+    newCardBuckets, cardsToStudyByDay, generateStudyPlan, idToCardMap,
+ }
