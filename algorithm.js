@@ -47,11 +47,6 @@ const idToCardMap = {};
 // only automatically generate the study schedule for cards that already have
 // a first day.
 
-// For now, I'm going to start all of the cards on random days, but with the 
-// constraint that they must be as evenly distributed as possible.
-let cardIdsInRandomOrder = [...Object.keys(idToCardMap)];
-shuffle(cardIdsInRandomOrder);
-
 const dayOfBar = Date.parse("30 Jul 2024");
 const studyPlanStartDay = Date.parse("22 Jun 2024");
 const lastDayForNewCards = Date.parse("25 Jul 2024");
@@ -135,6 +130,19 @@ let newCardBuckets = [
         idToCardMap[`${CONTRACTS}_${6}`],
         idToCardMap[`${CONTRACTS}_${7}`],
         idToCardMap[`${CONSTITUTIONAL_LAW}_${7}`],
+    ],
+    // 27 Jun 2024
+    [
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${8}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${9}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${10}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${11}`],
+        idToCardMap[`${CONSTITUTIONAL_LAW}_${12}`],
+        idToCardMap[`${PROPERTY}_${11}`],
+        idToCardMap[`${PROPERTY}_${12}`],
+        idToCardMap[`${CONTRACTS}_${8}`],
+        idToCardMap[`${CONTRACTS}_${9}`],
+        idToCardMap[`${CONTRACTS}_${10}`],
     ]
 ];
 while (newCardBuckets.length < daysInStudyPlan) {
@@ -145,14 +153,17 @@ let newCardBucketSampleCounters = [];
 // If there are saved new buckets, then load those
 const NEW_BUCKETS_STORAGE_KEY = `NEW_BUCKETS_STORAGE_KEY`;
 
-// Manually remove storage (only for debug)
-window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
+// Uncomment the line below and relauch to regenerate study plan from
+// the hard coded template above
+// window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
 
 if (window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY)) {
-    newCardBuckets = window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY);
+    newCardBuckets = 
+        [...JSON.parse(window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY))]
+            .map(ob => {
+                return [...ob].map(ob2 => Card.fromJsonObject(ob2));
+            });
 }
-
-generateStudyPlan();
 
 function generateStudyPlan() {
 
@@ -220,6 +231,9 @@ function generateStudyPlan() {
         return 0;
     }));
     */
+
+    // Save the new card buckets to local storage
+    window.localStorage.setItem(NEW_BUCKETS_STORAGE_KEY, JSON.stringify(newCardBuckets));
 }
 
 export { GROUP_POPULATIONS, studyPlanStartDay, lastDayForNewCards, dayOfBar,

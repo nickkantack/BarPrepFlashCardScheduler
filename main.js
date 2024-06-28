@@ -1,5 +1,6 @@
 import { GROUP_POPULATIONS } from "./algorithm.js";
 import { addReclickListener } from "./reclickListener.js";
+import { switchDay } from "./dayControls.js";
 
 const addNewCardButton = document.getElementById(`addNewCardButton`);
 const cardDivTemplate = document.getElementById(`cardTemplate`);
@@ -28,6 +29,7 @@ function generateNewCardDiv() {
     indexSelect.addEventListener(`change`, (e) => {
         removeNewCardDuplicates(cardDiv);
         // TODO write new cards object to storage, but filter incomplete new cards
+        if (groupSelect.selectedIndex >= 0) switchDay();
     });
 
     // Dispatch a change event to initialize the index select
@@ -42,6 +44,7 @@ function generateNewCardDiv() {
         deleteButton.classList.add(`deleteCardButtonIsHot`);
     }, () => {
         cardDiv.remove();
+        switchDay();
     }, 1000, () => {
         deleteButton.classList.remove(`deleteCardButtonIsHot`);
     });
@@ -60,6 +63,7 @@ function updateIndexSelectBasedOnGroupSelect(indexSelect, newGroupSelected) {
     }
     if (selectedIndex >= 0 && selectedIndex < GROUP_POPULATIONS[selectedGroup]) {
         indexSelect.selectedIndex = selectedIndex;
+        switchDay();
     } else {
         indexSelect.selectedIndex = -1;
     }

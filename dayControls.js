@@ -7,7 +7,9 @@ import { generateNewCardDiv, updateIndexSelectBasedOnGroupSelect } from "./main.
 const dayHeader = document.getElementById(`dayHeader`);
 let currentShowingDate = new Date();
 dayHeader.innerHTML = currentShowingDate.toLocaleDateString();
-const cardTemplate = document.getElementById(`cardTemplate`);
+
+generateStudyPlan();
+renderCardsForTheDay();
 
 const dateBackButton = document.getElementById(`dateBackButton`);
 const dateForwardButton = document.getElementById(`dateForwardButton`);
@@ -33,7 +35,7 @@ dateForwardButton.addEventListener(`click`, () => {
     dateBackButton.disabled = false;
     const previousDate = currentShowingDate;
     currentShowingDate = daysAfter(currentShowingDate, 1);
-    if (numberOfDaysBetween(currentShowingDate, dayOfBar) === 0) {
+    if (numberOfDaysBetween(currentShowingDate, dayOfBar) === 1) {
         dateForwardButton.disabled = true;
     }
     dayHeader.innerHTML = currentShowingDate.toLocaleDateString();
@@ -41,6 +43,8 @@ dateForwardButton.addEventListener(`click`, () => {
 });
 
 function switchDay(previousDate) {
+
+    if (!previousDate) previousDate = currentShowingDate;
 
     // Remove incomplete new cards
     const newCardsForDayDiv = document.querySelector(`div.newCardsForDayDiv`);
@@ -59,21 +63,23 @@ function switchDay(previousDate) {
         const indexSelect = cardDiv.querySelector(`select.indexSelect`);
         return idToCardMap[`${groupSelect.value}_${indexSelect.value}`];
     });
-    console.log(`Before navigating away, I've set the newCardBucket for index ${previousDayIndex} to be`);
-    console.log(newCardBuckets[previousDayIndex]);
-    console.log(newCardBuckets);
 
     // Recalculate the entire study plan
     generateStudyPlan();
 
+    // Update the UI to show the cards for the new current day
+    renderCardsForTheDay();
+}
+
+function renderCardsForTheDay() {
+
     // Regenerate the day div to show the correct cards
-    const dayIndex = numberOfDaysBetween(currentShowingDate, studyPlanStartDay);
+    const dayIndex = numberOfDaysBetween(currentShowingDate, studyPlanStartDay, true);
+    console.log(`The day index for today is ${dayIndex} and the date is ${currentShowingDate.toLocaleDateString()} and the study plan start day is ${new Date(studyPlanStartDay).toLocaleDateString()}`);
 
     // Update all of the old cards for this day
     const oldCardsForDavDiv = document.querySelector(`div.oldCardsForDayDiv`);
     oldCardsForDavDiv.innerHTML = ``;
-    console.log(`The old cards for this day are`);
-    console.log(cardsToStudyByDay[dayIndex]);
     let cardsDisplayedInThisDivAlready = [];
     cardsToStudyByDay[dayIndex].filter(card => !newCardBuckets[dayIndex].includes(card)).forEach(card => {
         // In some situations the study plan can mention a card more than once.
@@ -85,9 +91,8 @@ function switchDay(previousDate) {
     });
 
     // Update all of the new cards for this day
+    const newCardsForDayDiv = document.querySelector(`div.newCardsForDayDiv`);
     newCardsForDayDiv.innerHTML = ``;
-    console.log(`The new cards for this day are at index ${dayIndex} and are`);
-    console.log(newCardBuckets[dayIndex]);
     newCardBuckets[dayIndex].forEach(card => {
         const newCardDiv = generateNewCardDiv();
         newCardDiv.querySelector(`select.groupSelect`).value = card.group;
@@ -97,3 +102,5 @@ function switchDay(previousDate) {
         newCardsForDayDiv.appendChild(newCardDiv);
     });
 }
+
+export { switchDay }

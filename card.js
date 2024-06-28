@@ -14,6 +14,11 @@ class Card {
         this.group = group;
     }
 
+    static fromJsonObject(jsonObject) {
+        console.log(jsonObject);
+        return new Card(jsonObject.group, jsonObject.index);
+    }
+
 }
 
 export { Card }
