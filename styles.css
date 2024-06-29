@@ -5,9 +5,17 @@ select {
     font-size: 5vw;
     width: 100%;
 }
+svg {
+    position: relative;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
 .dateButton {
     width: 2em;
     height: 2em;
+    border: none;
+    background: none;
 }
 .deleteCardButton {
     width: 2em;
