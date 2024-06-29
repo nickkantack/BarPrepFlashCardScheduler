@@ -152,7 +152,7 @@ const NEW_BUCKETS_STORAGE_KEY = `NEW_BUCKETS_STORAGE_KEY`;
 
 // Uncomment the line below and relauch to regenerate study plan from
 // the hard coded template above
-window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
+// window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
 
 if (window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY)) {
     newCardBuckets = 
