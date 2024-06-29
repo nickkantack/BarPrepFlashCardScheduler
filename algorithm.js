@@ -178,9 +178,6 @@ function generateStudyPlan() {
     }
 
     const timesEachCardWasPracticed = {};
-    Object.keys(idToCardMap).forEach(id => {
-        timesEachCardWasPracticed[id] = 0;
-    });
 
     cardsToStudyByDay = [];
 
@@ -213,30 +210,10 @@ function generateStudyPlan() {
                 let fewestTimesPracticed = null;
                 let leastPracticedCard = null;
                 newCardBuckets[oldBucketIndex].forEach(card => {
-                    const isVerbose = i === 6 && oldBucketIndex === 2 && card.group === CRIMINAL_LAW_AND_PROCEDURE && card.index === 41;
-                    const isVerbose2 = i === 6 && oldBucketIndex === 2;
-                    const timesThisCardWasPracticed = timesEachCardWasPracticed[card.id];
-                    if (isVerbose) {
-                        console.log(`I've already sampled the target card ${timesThisCardWasPracticed} times`);
-                    }
+                    const timesThisCardWasPracticed = timesEachCardWasPracticed[`${oldBucketIndex}_${card.id}`] || 0;
                     if (fewestTimesPracticed == null || (timesThisCardWasPracticed < fewestTimesPracticed)) {
-                        if (isVerbose) {
-                            console.log(`This card is upsetting this one`);
-                            console.log(leastPracticedCard);
-                            console.log(`Who has been practiced ${timesEachCardWasPracticed[leastPracticedCard.id]} times`);
-                        }
-                        if (isVerbose2 && leastPracticedCard && leastPracticedCard.group === CRIMINAL_LAW_AND_PROCEDURE && leastPracticedCard.id === 41) {
-                            console.log(`The target card is upset by this one`);
-                            console.log(card);
-                        }
                         leastPracticedCard = card;
                         fewestTimesPracticed = timesThisCardWasPracticed;
-                    } else {
-                        if (isVerbose) {
-                            console.log(`The target card failed to upset`);
-                            console.log(leastPracticedCard);
-                            console.log(`Who has been practiced ${timesEachCardWasPracticed[leastPracticedCard.id]} times`);
-                        }
                     }
                 });
 
@@ -244,7 +221,11 @@ function generateStudyPlan() {
                 // manifests here as a null leastPracticedCard. Just don't sample the
                 // bucket in this case.
                 if (leastPracticedCard) {
-                    timesEachCardWasPracticed[leastPracticedCard.id]++;
+                    if (!timesEachCardWasPracticed[`${oldBucketIndex}_${leastPracticedCard.id}`]) {
+                        timesEachCardWasPracticed[`${oldBucketIndex}_${leastPracticedCard.id}`] = 1;
+                    } else {
+                        timesEachCardWasPracticed[`${oldBucketIndex}_${leastPracticedCard.id}`]++;
+                    }
                     cardsToStudyByDay[i].push(leastPracticedCard);
                 }
             }
@@ -262,8 +243,6 @@ function generateStudyPlan() {
             return 0;
         });
     }
-
-    console.log(cardsToStudyByDay[6]);
 
     // Save the new card buckets to local storage
     window.localStorage.setItem(NEW_BUCKETS_STORAGE_KEY, JSON.stringify(newCardBuckets));
