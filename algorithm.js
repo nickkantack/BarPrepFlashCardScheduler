@@ -22,6 +22,11 @@ const GROUP_POPULATIONS = {
     "Property": 65,
     "Personal Jurisdiction": 1,
     "Subject Matter Jurisdiction": 1,
+    "Trusts and Estates": 34,
+    "Secured Transactions": 22,
+    "Family Law": 19,
+    "Conflicts of Law": 9,
+    "Business Associations": 34
 }
 
 // Calculate the total number of cards across all groups
