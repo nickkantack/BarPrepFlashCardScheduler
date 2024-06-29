@@ -3,6 +3,7 @@ button {
 }
 select {
     font-size: 5vw;
+    width: 100%;
 }
 .dateButton {
     width: 2em;
@@ -13,6 +14,15 @@ select {
 }
 .deleteCardButtonIsHot {
     background: #F00;
+}
+.deleteCardTd {
+    width: 15%;
+}
+.groupSelectTd {
+    width: 70%;
+}
+.indexSelectTd {
+    width: 15%;
 }
 .mainPanel {
     position: relative;

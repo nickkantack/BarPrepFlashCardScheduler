@@ -5,23 +5,23 @@ import { shuffle, numberOfDaysBetween, daysAfter } from "./utils.js";
 const TORTS = "Torts";
 const EVIDENCE = "Evidence";
 const CONTRACTS = "Contracts";
-const CONSTITUTIONAL_LAW = "ConstitutionalLaw";
-const CIVIL_PROCEDURE = "CivilProcedure";
-const CRIMINAL_LAW_AND_PROCEDURE = "CriminalLawAndProcedure";
+const CONSTITUTIONAL_LAW = "Constitutional Law";
+const CIVIL_PROCEDURE = "Civil Procedure";
+const CRIMINAL_LAW_AND_PROCEDURE = "Criminal Law And Procedure";
 const PROPERTY = "Property";
-const PERSONAL_JURISDICTION = "PersonalJurisdiction";
-const SUBJECT_MATTER_JURISDICTION = "SubjectMatterJurisdiction";
+const PERSONAL_JURISDICTION = "Personal Jurisdiction";
+const SUBJECT_MATTER_JURISDICTION = "Subject Matter Jurisdiction";
 
 const GROUP_POPULATIONS = {
     "Torts": 44,
     "Evidence": 42,
     "Contracts": 42,
-    "ConstitutionalLaw": 52,
-    "CivilProcedure": 64,
-    "CriminalLawAndProcedure": 70,
+    "Constitutional Law": 52,
+    "Civil Procedure": 64,
+    "Criminal Law And Procedure": 70,
     "Property": 65,
-    "PersonalJurisdiction": 1,
-    "SubjectMatterJurisdiction": 1,
+    "Personal Jurisdiction": 1,
+    "Subject Matter Jurisdiction": 1,
 }
 
 // Calculate the total number of cards across all groups
@@ -146,14 +146,13 @@ let newCardBuckets = [
 while (newCardBuckets.length < daysInStudyPlan) {
     newCardBuckets.push([]);
 }
-let newCardBucketSampleCounters = [];
 
 // If there are saved new buckets, then load those
 const NEW_BUCKETS_STORAGE_KEY = `NEW_BUCKETS_STORAGE_KEY`;
 
 // Uncomment the line below and relauch to regenerate study plan from
 // the hard coded template above
-// window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
+window.localStorage.removeItem(NEW_BUCKETS_STORAGE_KEY);
 
 if (window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY)) {
     newCardBuckets = 
@@ -165,18 +164,31 @@ if (window.localStorage.getItem(NEW_BUCKETS_STORAGE_KEY)) {
 
 function generateStudyPlan() {
 
+    // To keep things deterministic, reorder the cards in each new card bucket
+    // to be in alphabetical order
+    for (let i = 0; i < newCardBuckets.length; i++) {
+        newCardBuckets[i] = newCardBuckets[i].sort((a, b) => {
+            if (a.id > b.id) {
+                return 1;
+            } else if (b.id > a.id) {
+                return -1;
+            }
+            return 0;
+        });
+    }
+
+    const timesEachCardWasPracticed = {};
+    Object.keys(idToCardMap).forEach(id => {
+        timesEachCardWasPracticed[id] = 0;
+    });
+
     cardsToStudyByDay = [];
 
     for (let i = 0; i < daysInStudyPlan; i++) cardsToStudyByDay.push([]);
 
-    // TODO Don't randomly create the new card buckets. Manually make them based on
-    // user input. Also, allow future new card buckets to be empty. This means this
-    // tool only prescribes how to study old cards but does not dictate which new
-    // cards to add to the study rotation (user gets to do that later).
+    const newCardBucketSampleCounters = [];
     for (let i = 0; i < daysInStudyPlan; i++) {
-        // Only initialize newCardBuckets if it is not yet initialized
-        // (i.e. be careful not to overwrite what was read from localStorage)
-        if (newCardBuckets.length === 0) newCardBuckets.push([]);
+        // Zero the sampling counters for the buckets
         newCardBucketSampleCounters.push(0);
     }
 
@@ -195,16 +207,36 @@ function generateStudyPlan() {
             newCardBucketSampleCounters[oldBucketIndex] += sampleCounterIncrement;
             const cardsToSample = Math.floor(newCardBucketSampleCounters[oldBucketIndex]);
             newCardBucketSampleCounters[oldBucketIndex] -= cardsToSample;
-            for (let k = 0; k < cardsToSample; k++) {
+            for (let k = 0; k < Math.min(cardsToSample, newCardBuckets[oldBucketIndex].length); k++) {
                 // Find the card in the old card bucket that is tied for being the
                 // least practiced and add it to the bucket
                 let fewestTimesPracticed = null;
                 let leastPracticedCard = null;
                 newCardBuckets[oldBucketIndex].forEach(card => {
-                    const timesThisCardWasPracticed = card.days.length;
+                    const isVerbose = i === 6 && oldBucketIndex === 2 && card.group === CRIMINAL_LAW_AND_PROCEDURE && card.index === 41;
+                    const isVerbose2 = i === 6 && oldBucketIndex === 2;
+                    const timesThisCardWasPracticed = timesEachCardWasPracticed[card.id];
+                    if (isVerbose) {
+                        console.log(`I've already sampled the target card ${timesThisCardWasPracticed} times`);
+                    }
                     if (fewestTimesPracticed == null || (timesThisCardWasPracticed < fewestTimesPracticed)) {
+                        if (isVerbose) {
+                            console.log(`This card is upsetting this one`);
+                            console.log(leastPracticedCard);
+                            console.log(`Who has been practiced ${timesEachCardWasPracticed[leastPracticedCard.id]} times`);
+                        }
+                        if (isVerbose2 && leastPracticedCard && leastPracticedCard.group === CRIMINAL_LAW_AND_PROCEDURE && leastPracticedCard.id === 41) {
+                            console.log(`The target card is upset by this one`);
+                            console.log(card);
+                        }
                         leastPracticedCard = card;
                         fewestTimesPracticed = timesThisCardWasPracticed;
+                    } else {
+                        if (isVerbose) {
+                            console.log(`The target card failed to upset`);
+                            console.log(leastPracticedCard);
+                            console.log(`Who has been practiced ${timesEachCardWasPracticed[leastPracticedCard.id]} times`);
+                        }
                     }
                 });
 
@@ -212,23 +244,26 @@ function generateStudyPlan() {
                 // manifests here as a null leastPracticedCard. Just don't sample the
                 // bucket in this case.
                 if (leastPracticedCard) {
-                    leastPracticedCard.days.push(daysAfter(studyPlanStartDay, i));
+                    timesEachCardWasPracticed[leastPracticedCard.id]++;
                     cardsToStudyByDay[i].push(leastPracticedCard);
                 }
             }
         }
     }
 
-    /*
-    console.log([...cardsToStudyByDay[5]].sort((a, b) => {
-        if (a.id > b.id) {
-            return 1;
-        } else if (b.id > a.id) {
-            return -1;
-        }
-        return 0;
-    }));
-    */
+    // Deterministically sort all of the cards in the study plan
+    for (let i = 0; i < cardsToStudyByDay.length; i++) {
+        cardsToStudyByDay[i] = cardsToStudyByDay[i].sort((a, b) => {
+            if (a.id > b.id) {
+                return 1;
+            } else if (b.id > a.id) {
+                return -1;
+            }
+            return 0;
+        });
+    }
+
+    console.log(cardsToStudyByDay[6]);
 
     // Save the new card buckets to local storage
     window.localStorage.setItem(NEW_BUCKETS_STORAGE_KEY, JSON.stringify(newCardBuckets));

@@ -24,11 +24,9 @@ function generateNewCardDiv() {
     groupSelect.addEventListener(`change`, (e) => {
         updateIndexSelectBasedOnGroupSelect(indexSelect, e.target.value);
         removeNewCardDuplicates(cardDiv);
-        // TODO write new cards object to storage, but filter incomplete new cards
     });
     indexSelect.addEventListener(`change`, (e) => {
         removeNewCardDuplicates(cardDiv);
-        // TODO write new cards object to storage, but filter incomplete new cards
         if (groupSelect.selectedIndex >= 0) switchDay();
     });
 

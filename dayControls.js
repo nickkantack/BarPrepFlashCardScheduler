@@ -8,11 +8,14 @@ const dayHeader = document.getElementById(`dayHeader`);
 let currentShowingDate = new Date();
 dayHeader.innerHTML = currentShowingDate.toLocaleDateString();
 
-generateStudyPlan();
-renderCardsForTheDay();
-
 const dateBackButton = document.getElementById(`dateBackButton`);
 const dateForwardButton = document.getElementById(`dateForwardButton`);
+
+// TODO understand why there is some hysteresis and two study plan generations
+// are needed to reach a stable state.
+generateStudyPlan();
+generateStudyPlan();
+renderCardsForTheDay();
 
 dateBackButton.addEventListener(`click`, () => {
     if (numberOfDaysBetween(currentShowingDate, studyPlanStartDay) === 0) {
