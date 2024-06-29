@@ -89,7 +89,10 @@ function renderCardsForTheDay() {
         // don't create any duplicates.
         if (cardsDisplayedInThisDivAlready.includes(card)) return;
         cardsDisplayedInThisDivAlready.push(card);
-        oldCardsForDavDiv.innerHTML += `${card.group} - ${card.index}<br/>`;
+        const oldCardDiv = document.createElement(`div`);
+        oldCardDiv.classList.add(`oldCardDiv`);
+        oldCardDiv.innerHTML = `${card.group} - ${card.index}`;
+        oldCardsForDavDiv.appendChild(oldCardDiv);
     });
 
     // Update all of the new cards for this day
