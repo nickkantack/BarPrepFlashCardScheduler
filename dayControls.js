@@ -91,6 +91,12 @@ function renderCardsForTheDay() {
         cardsDisplayedInThisDivAlready.push(card);
         const oldCardDiv = document.createElement(`div`);
         oldCardDiv.classList.add(`oldCardDiv`);
+        // Make the card red if it was a new card yesterday
+        if (dayIndex > 0 && newCardBuckets[dayIndex - 1].includes(card)) {
+            oldCardDiv.style.color = `#C00`;
+        } else {
+            oldCardDiv.style.color = `#000`;
+        }
         oldCardDiv.innerHTML = `${card.group} - ${card.index}`;
         oldCardsForDavDiv.appendChild(oldCardDiv);
     });
