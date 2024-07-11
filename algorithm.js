@@ -11,6 +11,7 @@ const CRIMINAL_LAW_AND_PROCEDURE = "Criminal Law And Procedure";
 const PROPERTY = "Property";
 const PERSONAL_JURISDICTION = "Personal Jurisdiction";
 const SUBJECT_MATTER_JURISDICTION = "Subject Matter Jurisdiction";
+const INDIAN_LAW = "Indian Law";
 
 const GROUP_POPULATIONS = {
     "Torts": 44,
@@ -26,7 +27,8 @@ const GROUP_POPULATIONS = {
     "Secured Transactions": 22,
     "Family Law": 19,
     "Conflicts of Law": 9,
-    "Business Associations": 34
+    "Business Associations": 34,
+    "Indian Law": 15
 }
 
 // Calculate the total number of cards across all groups
